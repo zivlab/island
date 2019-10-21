@@ -1,5 +1,5 @@
 # Revealing neural correlates of behavior without behavioral measurements
-This repository several scripts and data sets which allow performing analysis presented in Rubin et al., 2019. 
+This repository includes several scripts and data sets which allow performing analysis presented in Rubin et al., 2019. 
 
 
 ## Usage and documentation
