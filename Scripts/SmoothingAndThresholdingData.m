@@ -1,5 +1,5 @@
 function [all_trials_activity_smoothed_mat position_active_frames activity_mat_active_frames legitimacy_vec]=...
-    SoothingAndThresholdingData(all_trials_position,all_trials_activity_mat,downsample_flag,ActvitySmoothingSize,ActivityThreshold)
+    SmoothingAndThresholdingData(all_trials_position,all_trials_activity_mat,downsample_flag,ActvitySmoothingSize,ActivityThreshold)
 
 
 if downsample_flag==0

@@ -2,6 +2,7 @@
 
 % Here, define the path to the SampleData folder on your computer:
 PathRawData='D:\GitRepositories\island\SampleData';
+
 %%
 ActivityThreshold=1;
 downsample_flag=2;
