@@ -3,7 +3,7 @@ This repository includes several scripts and data sets which allow performing an
 
 
 ## Usage and documentation
-Scripts are provided in the *Scripts* directory.
+Scripts are provided in the *Scripts* directory. This folder should be added in the MATLAB *Set Path*.
 An example data set is provided in the *SampleData* directory.
 To perform the analysis on the example data set, use the *InternalStructureHippocamopus.m* script.  
 
