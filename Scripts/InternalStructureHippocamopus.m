@@ -113,15 +113,6 @@ NumOfRows=ceil(sqrt(NumOfClusters));
 NumOfColumns=ceil(NumOfClusters/NumOfRows);
 for run_cluster=1:NumOfClusters
     subplot(NumOfRows,NumOfColumns,run_cluster)
-    scatter3(v2(cluster_ind~=run_cluster,2),v2(cluster_ind~=run_cluster,3),v2(cluster_ind~=run_cluster,4),...
-        1)
-end
-
-figure
-NumOfRows=ceil(sqrt(NumOfClusters));
-NumOfColumns=ceil(NumOfClusters/NumOfRows);
-for run_cluster=1:NumOfClusters
-    subplot(NumOfRows,NumOfColumns,run_cluster)
     scatter3(v2(cluster_ind==run_cluster,2),v2(cluster_ind==run_cluster,3),v2(cluster_ind==run_cluster,4),...
         5,cmap_position(position_active_frames(cluster_ind==run_cluster),:),'fill')
     hold on
@@ -132,10 +123,6 @@ end
 state_per_frame=cluster_ind;
 state_per_frame(state_per_frame>NumOfClusters)=nan;
 
-figure; 
-plot(TimeVec(state_per_frame<=NumOfClusters),state_per_frame(state_per_frame<=NumOfClusters)*24/NumOfClusters,'*'); 
-hold on; 
-plot(position_per_frame,'k.')
 %% SubTypeClusteringPerType_Array.mat - can be loaded instead of running this block
 
 gap_threshold_vec=[7 7 5 7 7];
@@ -160,7 +147,7 @@ plot(position_per_frame*NumOfClusters/24,'b.')
 ylim([0 NumOfClusters+1])
 
 %%
-if 1
+if 0
 ManualClustering2_flug=1;
 SubTypeClusteringPerType_Array=SubClusteringPerSegment(NumOfClusters,activity_per_segment_Array,segmet_start_time_Array,segmet_end_time_Array,ManualClustering2_flug);
 else
