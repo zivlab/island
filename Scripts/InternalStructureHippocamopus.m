@@ -104,9 +104,39 @@ end
 
 figure
 scatter3(v2(:,2),v2(:,3),v2(:,4),5,cmap_position(position_active_frames,:),'fill')
+view([20,20])
+xlabel('Comp. 1')
+ylabel('Comp. 2')
+zlabel('Comp. 3')
+Panel1A_lim=0.025;
+xlim([-Panel1A_lim Panel1A_lim])
+ylim([-Panel1A_lim Panel1A_lim])
+zlim([-Panel1A_lim Panel1A_lim])
+set(gca,'XTick',[])
+set(gca,'XTickLabel',[]);
+set(gca,'YTick',[])
+set(gca,'YTickLabel',[]);
+set(gca,'ZTick',[])
+set(gca,'ZTickLabel',[]);
+axis square
 
 figure
 scatter3(v2(:,2),v2(:,3),v2(:,4),5,cmap_clusters(cluster_ind,:),'fill')
+view([20,20])
+xlabel('Comp. 1')
+ylabel('Comp. 2')
+zlabel('Comp. 3')
+Panel1A_lim=0.025;
+xlim([-Panel1A_lim Panel1A_lim])
+ylim([-Panel1A_lim Panel1A_lim])
+zlim([-Panel1A_lim Panel1A_lim])
+set(gca,'XTick',[])
+set(gca,'XTickLabel',[]);
+set(gca,'YTick',[])
+set(gca,'YTickLabel',[]);
+set(gca,'ZTick',[])
+set(gca,'ZTickLabel',[]);
+axis square
 %%
 figure
 NumOfRows=ceil(sqrt(NumOfClusters));
@@ -117,7 +147,22 @@ for run_cluster=1:NumOfClusters
         5,cmap_position(position_active_frames(cluster_ind==run_cluster),:),'fill')
     hold on
     scatter3(v2(cluster_ind~=run_cluster,2),v2(cluster_ind~=run_cluster,3),v2(cluster_ind~=run_cluster,4),...
-        1)
+        1,'fill')
+    view([20,20])
+xlabel('Comp. 1')
+ylabel('Comp. 2')
+zlabel('Comp. 3')
+Panel1A_lim=0.025;
+xlim([-Panel1A_lim Panel1A_lim])
+ylim([-Panel1A_lim Panel1A_lim])
+zlim([-Panel1A_lim Panel1A_lim])
+set(gca,'XTick',[])
+set(gca,'XTickLabel',[]);
+set(gca,'YTick',[])
+set(gca,'YTickLabel',[]);
+set(gca,'ZTick',[])
+set(gca,'ZTickLabel',[]);
+axis square
 end
 %%
 state_per_frame=cluster_ind;
@@ -147,7 +192,16 @@ plot(position_per_frame*NumOfClusters/24,'b.')
 ylim([0 NumOfClusters+1])
 
 %%
-if 0
+LoadSavedSubClusteringPerSegment=1; %this block can be either performed here or be loaded loaded
+if LoadSavedSubClusteringPerSegment
+    load('SubTypeClusteringPerType_Array')
+else
+    ManualClustering2_flug=1;
+    SubTypeClusteringPerType_Array=SubClusteringPerSegment(NumOfClusters,activity_per_segment_Array,segmet_start_time_Array,segmet_end_time_Array,ManualClustering2_flug); 
+end
+
+%%
+if 0 
 ManualClustering2_flug=1;
 SubTypeClusteringPerType_Array=SubClusteringPerSegment(NumOfClusters,activity_per_segment_Array,segmet_start_time_Array,segmet_end_time_Array,ManualClustering2_flug);
 else

@@ -8,7 +8,7 @@ for run_type=1:NumOfStates
     rand('seed',0)
     [coeff,score,latent,tsquared,explained,mu] = pca(activity_at_long_segments_of_chosen_cluster');
     size(score)
-    figure(765)
+    figure(1000) %to avoid overrighting existing figure
     plot3(score(:,1),score(:,2),score(:,3),'.')
     prompt = 'How many clusters? ';
     NumOfSubtypesForCurrentState = input(prompt);

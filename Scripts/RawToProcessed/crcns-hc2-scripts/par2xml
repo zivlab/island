@@ -1,0 +1,237 @@
+#!/bin/sh
+
+#////////////////////////////////////////////////////////////////////////////
+#//   par2xml : convert legacy parameter file into XML format
+#//
+#//   copyright            : (C) 2004 by Lynn Hazan and Micha� Zugaro
+#//   email                : lynn.hazan@myrealbox.com
+#//   email                : mzugaro@andromeda.rutgers.edu
+#//
+#//   This program is free software; you can redistribute it and/or modify
+#//   it under the terms of the GNU General Public License as published by
+#//   the Free Software Foundation; either version 2 of the License, or
+#//   (at your option) any later version.
+#//
+#////////////////////////////////////////////////////////////////////////////
+
+
+parameters=$#
+  if [ $parameters -lt 1 ] || [ $parameters -gt 7 ]
+  then
+    echo "usage: `basename $0` [options] parameterFile "
+    echo "type `basename $0` -h or --help for more information"
+    exit 1
+  fi
+  
+# Help message
+if [ $1 == "-h" ] || [ $1 == "--help" ]
+then
+  echo ""
+  echo "Creates a parameter file in new format (.xml) from the set of parameter files in old format (.par and .par.n)"
+  echo ""
+  echo "usage: `basename $0` [options] parameterFile"
+  echo " -v voltage range     set the acquisition system voltage range (default = 20)"
+  echo " -a amplification     set the acquisition system amplification (default = 1000)"
+  echo " -o offset    set the acquisition system offset (default = 0)"
+  echo ""
+  exit 0
+fi
+  
+indented_echo(){
+  for ((k=0;k<$nb_tags;k++))
+  do
+    echo -n -e "\t" >>$xmlfile
+  done
+  echo $* >>$xmlfile
+}
+
+tag(){
+  indented_echo "<$1>$2</$1>" >>$xmlfile
+}
+
+open_tag(){
+  indented_echo "<$1>"
+  open_tags[$nb_tags]=$1
+  nb_tags=$(($nb_tags+1))
+}
+
+close_tag(){
+  nb_tags=$(($nb_tags-1))
+  indented_echo "</${open_tags[$nb_tags]}>"
+}
+
+open_tag_attributes(){ 
+  for ((k=0;k<$nb_tags;k++))
+  do
+    echo -n -e "\t" >>$xmlfile
+  done
+  echo -n "<$1 " >>$xmlfile
+  
+  open_tags[$nb_tags]=$1
+  nb_tags=$(($nb_tags+1))
+  parameters=($@)
+  for((i=1;i<=$#-1;i++))
+  do
+   echo -n "${parameters[$i]} " >>$xmlfile
+  done
+  echo -n ">" >>$xmlfile
+}
+
+getNbSamples(){
+ file=($(strip_comments $1)) 
+ nbChannels=${file[1]}
+ nbSamples=${file[2 + $nbChannels + 4]}
+}
+
+getPeakIndex(){
+ file=($(strip_comments $1)) 
+ nbChannels=${file[1]}
+ peakIndex=${file[2 + $nbChannels + 5]}
+}
+
+getNbPca(){
+ file=($(strip_comments $1)) 
+ nbChannels=${file[1]}
+ nbPca=${file[2 + $nbChannels + 10]}
+}
+
+strip_comments(){
+ cat $1 |awk '(pos=index($0,"#")) {print substr($0,1,pos-1)} (index($0,"#")==0) {print $0}'
+}
+
+# Default values
+voltageRange=20
+amplification=1000
+offset=0
+
+# Parse parameters
+declare -i j
+declare -i i
+declare -i fileParameter=1
+for ((i=1;i<$parameters;i++))
+do
+  j=i+1
+  case "${!i}" in
+  "-v" )
+    voltageRange=${!j}
+    fileParameter=fileParameter+2
+    ;;
+  "-a" )
+    amplification=${!j}
+    fileParameter=fileParameter+2
+    ;;
+  "-o" )
+    offset=${!j}
+    fileParameter=fileParameter+2
+    ;;
+  * )
+   ;;
+  esac 
+done
+
+#check if the input file name exits
+if [ ! -f ${!fileParameter} ]
+then
+  echo  "The requested file ${!fileParameter} does not exist."
+  exit
+fi
+
+basePath=${!fileParameter%par}  
+xmlfile=${basePath}xml
+parfile=($(strip_comments ${!fileParameter}))
+
+nb_tags=0
+
+#Check that all the par.n files are present
+for ((i=1;i<=${parfile[4]};i++))
+ do
+  currentFile=${basePath}par.$i
+  if [ ! -f $currentFile ]
+  then
+   echo "$currentFile does not exit"
+   exit 1
+  else
+   parFileNames[$i]=$currentFile 
+  fi
+ done
+
+#check if the output file already exits
+if [ -f $xmlfile ]
+then
+  echo -n "$xmlfile exists; overwrite (yes/no)? "
+  read answer
+  if [ $answer == "yes" ] || [ $answer == "y" ]
+  then
+    rm -f $xmlfile
+  else
+    exit
+  fi
+fi
+
+
+open_tag_attributes "parameters" 'creator="par2xml"' 'version="1.0"'
+
+open_tag "acquisitionSystem"
+tag "nBits" ${parfile[1]}
+tag "nChannels" ${parfile[0]}
+tag "samplingRate" `echo ${parfile[2]} | awk '{print 1/ $1*1000000 }'`
+tag "voltageRange" $voltageRange
+tag "amplification" $amplification
+tag "offset" $offset
+close_tag
+
+open_tag "fieldPotentials"
+tag "lfpSamplingRate" 1250
+close_tag
+
+n=5
+open_tag "anatomicalDescription"
+ open_tag "channelGroups"
+ for ((i=1;i<=${parfile[4]};i++))
+ do
+   open_tag "group"
+   for ((j=1;j<=${parfile[$n]};j++))
+   do
+    tag "channel" ${parfile[$j+$n]}
+   done
+   close_tag
+   n=$(($n+${parfile[$n]}+1))
+ done
+ close_tag
+close_tag
+
+
+n=5
+open_tag "spikeDetection"
+ open_tag "channelGroups"
+ for ((i=1;i<=${parfile[4]};i++))
+ do
+   open_tag "group"
+   open_tag "channels"
+   for ((j=1;j<=${parfile[$n]};j++))
+   do
+    tag "channel" ${parfile[$j+$n]}
+   done
+   close_tag
+   parnFileName=${parFileNames[$i]}
+   getNbSamples $parnFileName
+   tag "nSamples" $nbSamples
+   getPeakIndex $parnFileName
+   tag "peakSampleIndex" $peakIndex
+   getNbPca $parnFileName
+   tag "nFeatures" $nbPca   
+   close_tag
+   n=$(($n+${parfile[$n]}+1))
+ done
+ close_tag
+close_tag
+
+#//open_tag "files"
+#//for ((i=1;i<=${parfile[$n]};i++))
+#//do
+ #// tag "name" ${parfile[$i+$n]}
+#//done
+#//close_tag
+
+close_tag
+

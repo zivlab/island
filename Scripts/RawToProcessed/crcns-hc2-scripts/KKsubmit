@@ -1,0 +1,24 @@
+#!/bin/bash
+
+current=`pwd`
+if [ $# -lt 1 ]
+then
+ echo "usage: `basename $0` directory"
+ exit 1
+fi
+if [ ! -d $1 ]
+then
+ echo "error: $1 not found"
+ exit 1
+fi
+cd $1
+for i in *fet*
+do
+ basename=${i%*.fet.*}
+ electrode=${i#*.fet.}
+ declare -i nFets=`awgetxy $basename.fet.$electrode 1 1`-5
+ features=`for ((k=1;k<=$nFets;k++)); do echo -n 1; done`
+ features=`echo ${features}00001`
+ echo "Submitting electrode $electrode with features $features"
+ KlustaKwik `pwd`/${basename} $electrode -MinClusters 25 -MaxClusters 40 -UseFeatures $features
+done
